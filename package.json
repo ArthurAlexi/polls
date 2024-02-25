@@ -7,11 +7,14 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "tsx watch src/http/server.ts"
   },
-  "keywords": ["websocket "],
+  "keywords": [
+    "websocket "
+  ],
   "author": "Arthur Alexi",
   "license": "ISC",
   "devDependencies": {
     "@types/node": "^20.11.20",
+    "prisma": "^5.10.2",
     "tsx": "^4.7.1",
     "typescript": "^5.3.3"
   },
