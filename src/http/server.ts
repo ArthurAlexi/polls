@@ -6,6 +6,10 @@ app.get('/', ()=> {
     return 'HTTP server running!'
 })
 
+app.post('/polls', (request) => {
+    
+})
+
 app.listen({
     port: 3333
 })
