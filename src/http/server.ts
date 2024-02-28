@@ -1,9 +1,8 @@
 import fastify from "fastify";
-import {z} from "zod";
-import { prisma } from "../lib/prisma";
 import { createPoll } from "./routes/create-poll";
 import { getPoll } from "./routes/get-poll";
-
+import { voteOnPoll } from "./routes/vote-on-poll";
+import cookie from "@fastify/cookie"
 
 
 const app = fastify()
@@ -13,8 +12,14 @@ app.get('/', ()=> {
     return 'HTTP server running!'
 })
 
+app.register(cookie, {
+    secret: "my-secret-polls",
+    hook: 'onRequest',
+    parseOptions: {},
+})
 app.register(createPoll)
 app.register(getPoll)
+app.register(voteOnPoll)
 
 app.listen({
     port: 3333
