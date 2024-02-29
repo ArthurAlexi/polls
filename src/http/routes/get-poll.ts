@@ -1,11 +1,12 @@
 import { FastifyInstance } from "fastify";
 import { prisma } from "../../lib/prisma";
 import z from "zod";
+import { redis } from "../../lib/redis";
 
 
-export async function getPoll(app: FastifyInstance){
-    app.get('/polls/:pollId',async (request, reply) => {
-        
+export async function getPoll(app: FastifyInstance) {
+    app.get('/polls/:pollId', async (request, reply) => {
+
         const getPollParams = z.object({
             pollId: z.string().uuid()
         })
@@ -18,15 +19,41 @@ export async function getPoll(app: FastifyInstance){
             },
             include: {
                 options: {
-                    select:{
+                    select: {
                         id: true,
                         title: true,
                     }
                 }
             }
 
-        }) 
+        })
 
-        return reply.status(200).send(poll)
+        if (!poll) {
+            return reply.status(400).send({ 'message': 'Poll nol found.' })
+        }
+
+        const result = await redis.zrange(pollId, 0, -1, 'WITHSCORES') // get all
+        const votes = result.reduce((object, line, index) => {
+            if (index % 2 === 0) {
+                const score = result[index + 1]
+
+                Object.assign(object, { [line]: Number(score) })
+            }
+            return object
+        }, {} as Record<string, number>)
+
+        return reply.status(200).send({
+            poll: {
+                id: poll.id,
+                title: poll.title,
+                options: poll.options.map(option => {
+                    return {
+                        id: option.id,
+                        title: option.title,
+                        score: (option.id in votes) ? votes[option.id] : 0
+                    }
+                })
+            }
+        })
     })
 }
